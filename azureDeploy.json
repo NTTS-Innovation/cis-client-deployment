@@ -115,7 +115,7 @@
     },
     "githubRepoURL": {
       "type": "string",
-      "defaultValue": "https://github.com/jflowersntt/AzureNetworkWatcherNSGFlowLogsConnector.git"
+      "defaultValue": "https://github.com/NTTS-Innovation/AzureNetworkWatcherNSGFlowLogsConnector.git"
     },
     "githubRepoBranch": {
       "type": "string",
