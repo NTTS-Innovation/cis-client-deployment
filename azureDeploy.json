@@ -159,7 +159,7 @@
     }
   },
   "variables": {
-    "autoregistrationEndPoint": "[concat(parameters('RegistrationEndPoint'), '/v1/subscriptions?code=', concat(parameters('RegistrationApiKey'))]",
+    "autoregistrationEndPoint": "[concat(parameters('RegistrationEndPoint'), '/v1/subscriptions?code=', parameters('RegistrationApiKey'))]",
     "functionAppName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-', uniquestring(resourceGroup().id))]",
     "deploymentScriptName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-','autoregistration')]",
     "ServicePlan": "[concat(parameters('appNamePrefix'), '-', parameters('location'),'-serviceplan')]",
