@@ -1,0 +1,460 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appNamePrefix": {
+      "type": "string",
+      "defaultValue": "nttthreat",
+      "metadata": {
+        "description": "The name of the function app that you wish to create."
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "eastasia",
+        "southeastasia",
+        "australiaeast",
+        "brazilsouth",
+        "canadacentral",
+        "eastus2",
+        "eastus",
+        "centralus",
+        "northcentralus",
+        "uksouth",
+        "centralindia",
+        "southindia",
+        "japaneast",
+        "koreacentral",
+        "northeurope",
+        "westcentralus",
+        "westeurope",
+        "westus2",
+        "westus",
+        "southcentralus"
+      ],
+      "metadata": {
+        "description": "Location"
+      }
+    },
+    "messageRetentionInDays": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 7,
+      "metadata": {
+        "description": "How long to retain the data in Event Hub"
+      }
+    },
+    "partitionCount": {
+      "type": "int",
+      "defaultValue": 4,
+      "minValue": 2,
+      "maxValue": 32,
+      "metadata": {
+        "description": "Number of partitions chosen"
+      }
+    },
+    "consumerGroupName": {
+      "type": "string",
+      "defaultValue": "ntt",
+      "metadata": {
+        "description": "Name of Eventhub Consumer Group for NTT"
+      }
+    },
+    "eventhubAuthorizationRuleNameListen": {
+      "type": "string",
+      "defaultValue": "ntt-threat-analyzer",
+      "metadata": {
+        "description": "Name of Eventhub Authorization Rule"
+      }
+    },
+    "eventhubAuthorizationRuleNameSender": {
+      "type": "string",
+      "defaultValue": "ntt-nsgflows-sender",
+      "metadata": {
+        "description": "Name of Eventhub Authorization Rule"
+      }
+    },
+    "appServicePlan": {
+      "type": "string",
+      "defaultValue": "ServicePlan",
+      "allowedValues": [
+        "ServicePlan",
+        "Consumption"
+      ],
+      "metadata": {
+        "description": "ServicePlan creates an App Service Plan and is billed according to that plan. Consumption bills according to https://azure.microsoft.com/en-gb/pricing/details/functions/."
+      }
+    },
+    "appServicePlanTier": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Shared",
+        "Basic",
+        "Standard",
+        "Premium",
+        "Isolated"
+      ],
+      "defaultValue": "Shared",
+      "metadata": {
+        "description": "ServicePlan only: See here for details: https://azure.microsoft.com/en-us/pricing/details/app-service/windows/"
+      }
+    },
+    "appServicePlanName": {
+      "type": "string",
+      "defaultValue": "S1",
+      "metadata": {
+        "description": "ServicePlan only: Plan name must match with plan tier. See here for details: https://azure.microsoft.com/en-us/pricing/details/app-service/windows/"
+      }
+    },
+    "appServicePlanCapacity": {
+      "type": "int",
+      "defaultValue": 2
+    },
+    "githubRepoURL": {
+      "type": "string",
+      "defaultValue": "https://github.com/jflowersntt/AzureNetworkWatcherNSGFlowLogsConnector.git"
+    },
+    "githubRepoBranch": {
+      "type": "string",
+      "defaultValue": "master"
+    },
+    "outputBinding": {
+      "type": "string",
+      "allowedValues": [
+        "eventhub"
+      ],
+      "defaultValue": "eventhub",
+      "metadata": {
+        "description": "Select the desired destination for your logs."
+      }
+    },
+    "eventHubName": {
+      "type": "string",
+      "defaultValue": "ntt-cis-logs",
+      "metadata": {
+        "description": "Event hub only: Event hub name."
+      }
+    },
+    "utcNow": {
+      "type": "string",
+      "defaultValue": "[utcNow()]",
+      "metadata": {
+        "description": "UTC Timestamp used to Generate GUID"
+      }
+    }
+  },
+  "variables": {
+    "functionAppName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-', uniquestring(resourceGroup().id))]",
+    "deploymentScriptName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-','autoregistration')]",
+    "ServicePlan": "[concat(parameters('appNamePrefix'), '-', parameters('location'),'-serviceplan')]",
+    "eventHubNameSpace": "[concat(parameters('appNamePrefix'),'-', parameters('location'), '-', uniquestring(parameters('utcNow')))]",
+    "Consumption": "[concat('consumption', parameters('appNamePrefix'))]",
+    "hostingPlanName": "[variables(parameters('appServicePlan'))]",
+    "storageAccountName": "[take(concat(parameters('appNamePrefix'), parameters('location'), uniquestring(resourceGroup().id)), 24)]",
+    "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+    "ehAuthorizationRuleIdSender": "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('eventHubNameSpace'),parameters('eventHubName'), parameters('eventhubAuthorizationRuleNameSender'))]",
+    "ehAuthorizationRuleIdListener": "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', variables('eventHubNameSpace'),parameters('eventHubName'), parameters('eventhubAuthorizationRuleNameListen'))]",
+    "NTTAzurePostUserIdentity": "[concat(resourceGroup().name,'-',parameters('location'),'-','NTTAzurePostUserIdentity')]",
+    "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+    "roleDefinitionName": "[guid(resourceGroup().id, parameters('location'), parameters('utcNow'))]",
+    "contributorRoleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
+      "kind": "StorageV2",
+      "apiVersion": "2019-04-01",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {
+        "accountType": "Standard_LRS"
+      }
+    },
+    {
+      "condition": "[equals(parameters('appServicePlan'), 'ServicePlan')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2016-09-01",
+      "name": "[variables('ServicePlan')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "tier": "[parameters('appServicePlanTier')]",
+        "name": "[parameters('appServicePlanName')]",
+        "capacity": "[parameters('appServicePlanCapacity')]"
+      }
+    },
+    {
+      "condition": "[equals(parameters('appServicePlan'), 'Consumption')]",
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2016-09-01",
+      "name": "[variables('Consumption')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "name": "[variables('Consumption')]",
+        "computeMode": "Dynamic",
+        "sku": "Dynamic"
+      }
+    },
+    {
+      "apiVersion": "2016-08-01",
+      "type": "Microsoft.Web/sites",
+      "name": "[variables('functionAppName')]",
+      "location": "[parameters('location')]",
+      "kind": "functionapp",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.EventHub/namespaces', variables('eventHubNameSpace'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "siteConfig": {
+          "appSettings": [
+{
+              "name": "AzureWebJobsDashboard",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(variables('functionAppName'))]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~2"
+            },
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "6.5.0"
+            },
+            {
+              "name": "blobContainerName",
+              "value": "insights-logs-networksecuritygroupflowevent"
+            },
+            {
+              "name": "nsgSourceDataAccount",
+              "value": "nsgSourceDataConnection"
+            },
+            {
+              "name": "nsgSourceDataConnection",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId(resourceGroup().name,'Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-04-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
+            },
+            {
+              "name": "outputBinding",
+              "value": "[parameters('outputBinding')]"
+            },
+            {
+              "name": "eventHubConnection",
+              "value": "[listkeys(variables('ehAuthorizationRuleIdSender'), '2017-04-01').primaryConnectionString]"
+            },
+            {
+              "name": "eventHubName",
+              "value": "[parameters('eventHubName')]"
+            },
+            {
+              "name": "logIncomingJSON",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "apiVersion": "2018-02-01",
+          "name": "web",
+          "type": "sourcecontrols",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', variables('functionAppName'))]"
+          ],
+          "properties": {
+            "RepoUrl": "[parameters('githubRepoURL')]",
+            "branch": "[parameters('githubRepoBranch')]",
+            "IsManualIntegration": true
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2017-04-01",
+      "name": "[variables('eventHubNameSpace')]",
+      "type": "Microsoft.EventHub/namespaces",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "isAutoInflateEnabled": true,
+        "maximumThroughputUnits": 7
+      },
+      "resources": [
+        {
+          "apiVersion": "2017-04-01",
+          "name": "[parameters('eventHubName')]",
+          "type": "eventhubs",
+          "dependsOn": [
+            "[concat('Microsoft.EventHub/namespaces/', variables('eventHubNameSpace'))]"
+          ],
+          "properties": {
+            "messageRetentionInDays": "[parameters('messageRetentionInDays')]",
+            "partitionCount": "[parameters('partitionCount')]"
+          },
+          "resources": [
+            {
+              "apiVersion": "2017-04-01",
+              "name": "[parameters('consumerGroupName')]",
+              "type": "consumergroups",
+              "dependsOn": [ "[parameters('eventHubName')]" ],
+              "properties": {
+                "userMetadata": "Consumer Group for NTT"
+              }
+            },
+            {
+              "apiVersion": "2017-04-01",
+              "name": "[parameters('eventhubAuthorizationRuleNameSender')]",
+              "type": "authorizationRules",
+              "dependsOn": [
+                "[concat('Microsoft.EventHub/namespaces/', variables('eventHubNameSpace'),'/eventhubs/',parameters('eventHubName'))]"
+              ],
+              "properties": {
+                "rights": [
+                  "Send"
+                ]
+              }
+            },
+            {
+              "apiVersion": "2017-04-01",
+              "name": "[parameters('eventhubAuthorizationRuleNameListen')]",
+              "type": "authorizationRules",
+              "dependsOn": [
+                "[concat('Microsoft.EventHub/namespaces/', variables('eventHubNameSpace'),'/eventhubs/',parameters('eventHubName'))]"
+              ],
+              "properties": {
+                "rights": [
+                  "Listen"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "name": "[variables('NTTAzurePostUserIdentity')]",
+      "apiVersion": "2018-11-30",
+      "location": "[parameters('location')]"
+    },
+    {
+      "apiVersion": "2020-04-01-preview",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "name": "[variables('roleDefinitionName')]",
+      "dependsOn": [
+        "[variables('NTTAzurePostUserIdentity')]"
+      ],
+      "properties": {
+        "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+        "principalId": "[reference(variables('NTTAzurePostUserIdentity')).principalId]",
+        "scope": "[resourceGroup().id]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2019-10-01-preview",
+      "name": "[variables('deploymentScriptName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('NTTAzurePostUserIdentity')]",
+        "[variables('roleDefinitionName')]"
+      ],
+      "kind": "AzurePowerShell",
+      "identity": {
+        "type": "userAssigned",
+        "userAssignedIdentities": {
+          "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('NTTAzurePostUserIdentity'))]": {}
+        }
+      },
+      "properties": {
+        "forceUpdateTag": 1,
+        "azPowerShellVersion": "3.0",
+        "environmentVariables": [
+          {
+            "name": "subscriptionId",
+            "value": "[subscription().subscriptionId]"
+          },
+          {
+            "name": "resourceGroup",
+            "value": "[resourceGroup().name]"
+          },
+          {
+            "name": "regionName",
+            "value": "[parameters('location')]"
+          },
+          {
+            "name": "deploymentName",
+            "value": "[deployment().name]"
+          },
+          {
+            "name": "eventhubNameSpace",
+            "value": "[variables('eventHubNameSpace')]"
+          },
+          {
+            "name": "eventhubName",
+            "value": "[parameters('eventHubName')]"
+          },
+          {
+            "name": "eventhubPolicyName",
+            "value": "[parameters('eventhubAuthorizationRuleNameSender')]"
+          },
+          {
+            "name": "consumerGroupName",
+            "value": "[parameters('consumerGroupName')]"
+          },
+          {
+            "name": "eventHubPrimaryKey",
+            "value": "[listKeys(resourceId(concat('Microsoft.EventHub/namespaces/eventhubs','/authorizationRules'),variables('eventHubNameSpace'),parameters('eventHubName'),parameters('eventhubAuthorizationRuleNameListen')),'2015-08-01').primaryKey]"
+          },
+          {
+            "name": "deploymentTime",
+            "value": "[parameters('utcNow')]"
+          },
+          {
+            "name": "functionAppName",
+            "value": "[variables('functionAppName')]"
+          },
+          {
+            "name": "functionAppMasterKey",
+            "value": "bad"
+          }
+        ],
+        "containerSettings": {
+          "containerGroupName": "nttfunctioncontainer"
+        },
+        "storageAccountSettings": {
+          "storageAccountName": "[variables('storageAccountName')]",
+          "storageAccountKey": "[listKeys(variables('storageAccountId'), '2019-04-01').keys[0].value]"
+        },
+        "scriptContent": "pwsh ./client_activation.ps",
+
+        "supportingScriptUris": [
+          "https://raw.githubusercontent.com/j-flowers/client_activation/master/client_activation.ps"
+        ],
+        "timeout": "PT30M",
+        "cleanupPreference": "OnSuccess",
+        "retentionInterval": "P1D"
+      }
+    }
+  ]
+}
