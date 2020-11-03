@@ -37,6 +37,18 @@
         "description": "Location"
       }
     },
+    "RegistrationApiKey": {
+      "type": "string",
+      "metadata": {
+        "description": "Api Key for Registration"
+      }
+    },
+    "RegistrationEndPoint": {
+      "type": "string",
+      "metadata": {
+        "description": "auto Registration url "
+      }
+    },
     "messageRetentionInDays": {
       "type": "int",
       "defaultValue": 1,
@@ -147,6 +159,7 @@
     }
   },
   "variables": {
+    "autoregistrationEndPoint": "[concat(parameters('RegistrationEndPoint'), '/v1/subscriptions?code=', concat(parameters('RegistrationApiKey'))]",
     "functionAppName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-', uniquestring(resourceGroup().id))]",
     "deploymentScriptName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-','autoregistration')]",
     "ServicePlan": "[concat(parameters('appNamePrefix'), '-', parameters('location'),'-serviceplan')]",
@@ -437,6 +450,10 @@
           {
             "name": "functionAppMasterKey",
             "value": "bad"
+          },
+          {
+            "name": "EndPoint",
+            "value": "[variables('autoregistrationEndPoint')]"
           }
         ],
         "containerSettings": {
