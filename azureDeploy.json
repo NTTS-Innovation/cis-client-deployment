@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "appNamePrefix": {
@@ -404,19 +404,19 @@
         "azPowerShellVersion": "3.0",
         "environmentVariables": [
           {
-            "name": "subscriptionId",
+            "name": "SubscriptionId",
             "value": "[subscription().subscriptionId]"
           },
           {
-            "name": "resourceGroup",
+            "name": "ResourceGroup",
             "value": "[resourceGroup().name]"
           },
           {
-            "name": "regionName",
+            "name": "Region",
             "value": "[parameters('location')]"
           },
           {
-            "name": "deploymentName",
+            "name": "DeploymentName",
             "value": "[deployment().name]"
           },
           {
@@ -424,31 +424,31 @@
             "value": "[variables('eventHubNameSpace')]"
           },
           {
-            "name": "eventhubName",
+            "name": "EventHubName",
             "value": "[parameters('eventHubName')]"
           },
           {
-            "name": "eventhubPolicyName",
+            "name": "EventHubPolicyName",
             "value": "[parameters('eventhubAuthorizationRuleNameSender')]"
           },
           {
-            "name": "consumerGroupName",
+            "name": "EventHubConsumerGroup",
             "value": "[parameters('consumerGroupName')]"
           },
           {
-            "name": "eventHubPrimaryKey",
+            "name": "EventHubPrimaryKey",
             "value": "[listKeys(resourceId(concat('Microsoft.EventHub/namespaces/eventhubs','/authorizationRules'),variables('eventHubNameSpace'),parameters('eventHubName'),parameters('eventhubAuthorizationRuleNameListen')),'2015-08-01').primaryKey]"
           },
           {
-            "name": "deploymentTime",
+            "name": "DeploymentTime",
             "value": "[parameters('utcNow')]"
           },
           {
-            "name": "functionAppName",
+            "name": "FunctionAppName",
             "value": "[variables('functionAppName')]"
           },
           {
-            "name": "functionAppMasterKey",
+            "name": "FunctionAppKey",
             "value": "bad"
           },
           {
