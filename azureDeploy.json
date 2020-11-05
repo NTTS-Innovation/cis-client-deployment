@@ -466,7 +466,7 @@
         "scriptContent": "pwsh ./client_activation.ps",
 
         "supportingScriptUris": [
-          "https://raw.githubusercontent.com/j-flowers/client_activation/master/client_activation.ps"
+          "https://raw.githubusercontent.com/NTTS-Innovation/client_activation/master/client_activation.ps"
         ],
         "timeout": "PT30M",
         "cleanupPreference": "OnSuccess",
