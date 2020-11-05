@@ -37,12 +37,6 @@
         "description": "Location"
       }
     },
-    "RegistrationApiKey": {
-      "type": "string",
-      "metadata": {
-        "description": "Api Key for Registration"
-      }
-    },
     "RegistrationEndPoint": {
       "type": "string",
       "metadata": {
@@ -159,7 +153,7 @@
     }
   },
   "variables": {
-    "autoregistrationEndPoint": "[concat(parameters('RegistrationEndPoint'), '/v1/subscriptions?code=', parameters('RegistrationApiKey'))]",
+    "autoregistrationEndPoint": "[parameters('RegistrationEndPoint')]",
     "functionAppName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-', uniquestring(resourceGroup().id))]",
     "deploymentScriptName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-','autoregistration')]",
     "ServicePlan": "[concat(parameters('appNamePrefix'), '-', parameters('location'),'-serviceplan')]",
