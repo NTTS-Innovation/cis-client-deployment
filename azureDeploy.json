@@ -434,6 +434,10 @@
             "value": "[listKeys(resourceId(concat('Microsoft.EventHub/namespaces/eventhubs','/authorizationRules'),variables('eventHubNameSpace'),parameters('eventHubName'),parameters('eventhubAuthorizationRuleNameListen')),'2015-08-01').primaryKey]"
           },
           {
+            "name": "EventHubConnectionString",
+            "value": "[listKeys(resourceId(concat('Microsoft.EventHub/namespaces/eventhubs','/authorizationRules'),variables('eventHubNameSpace'),parameters('eventHubName'),parameters('eventhubAuthorizationRuleNameListen')),'2015-08-01').primaryConnectionString]"
+          },
+          {
             "name": "DeploymentTime",
             "value": "[parameters('utcNow')]"
           },
