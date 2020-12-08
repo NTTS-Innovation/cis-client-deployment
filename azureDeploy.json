@@ -203,8 +203,11 @@
       "location": "[parameters('location')]",
       "properties": {
         "name": "[variables('Consumption')]",
-        "computeMode": "Dynamic",
-        "sku": "Dynamic"
+        "computeMode": "Dynamic"
+      },
+      "sku": {
+        "name": "Y1",
+        "teir": "Dynamic"
       }
     },
     {
