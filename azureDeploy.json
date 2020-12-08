@@ -207,7 +207,7 @@
       },
       "sku": {
         "name": "Y1",
-        "teir": "Dynamic"
+        "tier": "Dynamic"
       }
     },
     {
