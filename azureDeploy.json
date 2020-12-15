@@ -376,7 +376,6 @@
       "properties": {
         "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
         "principalId": "[reference(variables('NTTAzurePostUserIdentity')).principalId]",
-        "scope": "[subscription().subscriptionId]",
         "principalType": "ServicePrincipal"
       }
     },
