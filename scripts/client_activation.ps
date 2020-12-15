@@ -1,17 +1,12 @@
-$params = @{"SubscriptionId"=$Env:SubscriptionId;
-  "ResourceGroup"=$Env:ResourceGroup;
-  "DeploymentName"=$Env:DeploymentName;
-  "EventHubNamespace"=$Env:eventhubNameSpace;
-  "EventHubName"=$Env:EventHubName;
-  "EventHubPolicyName"=$Env:EventHubPolicyName;
-  "EventHubConsumerGroup"=$Env:EventHubConsumerGroup;
-  "EventHubConnectionString"=$Env:EventHubConnectionString;
-  "Region"=$Env:Region;
-  "EventHubPrimaryKey"=$Env:EventHubPrimaryKey;
-  "FunctionAppName"=$Env:FunctionAppName;
-  "FunctionAppKey"=$Env:FunctionAppKey;
-  "DeploymentTime"=$Env:DeploymentTime;
-  "EndPoint"=$Env:EndPoint;
+$params = @{"subscription_id"=$Env:SubscriptionId;
+  "resource_group"=$Env:ResourceGroup;
+  "eventhub_namespace"=$Env:eventhubNameSpace;
+  "eventhub_name"=$Env:EventHubName;
+  "eventhub_policy_name"=$Env:EventHubPolicyName;
+  "consumer_group_name"=$Env:EventHubConsumerGroup;
+  "region"=$Env:Region;
+  "primary_key"=$Env:EventHubPrimaryKey;
+  "deployment_time"=$Env:DeploymentTime;
 }
 
 Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json"

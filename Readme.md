@@ -2,6 +2,7 @@ NTT Threat Detection Service
 
 
 Requirements:
+
     Your subscription must be registered to "microsoft.insights" in order to enable NSG Flow Logs. 
 
 Deploy Event Hub
