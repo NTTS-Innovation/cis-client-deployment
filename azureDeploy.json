@@ -432,7 +432,7 @@
           },
           {
             "name": "EventHubPolicyName",
-            "value": "[parameters('eventhubAuthorizationRuleNameSender')]"
+            "value": "[parameters('eventhubAuthorizationRuleNameListen')]"
           },
           {
             "name": "EventHubConsumerGroup",

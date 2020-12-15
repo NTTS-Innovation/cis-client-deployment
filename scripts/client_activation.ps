@@ -11,4 +11,4 @@ $params = @{"subscription_id"=$Env:SubscriptionId;
 
 Write-Output ($params|ConvertTo-Json)
 
-Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json" -Headers @{ 'x-functions-key' =  $Env:ApiKey}
+Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json" -Headers @{ 'x-functions-key' =  $Env:ApiKey }
