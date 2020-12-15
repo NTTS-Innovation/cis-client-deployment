@@ -376,12 +376,13 @@
       "properties": {
         "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
         "principalId": "[reference(variables('NTTAzurePostUserIdentity')).principalId]",
+        "scope": "[resourceGroup().id]",
         "principalType": "ServicePrincipal"
       }
     },
     {
       "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2019-10-01-preview",
+      "apiVersion": "2020-10-01",
       "name": "[variables('deploymentScriptName')]",
       "location": "[parameters('location')]",
       "dependsOn": [
