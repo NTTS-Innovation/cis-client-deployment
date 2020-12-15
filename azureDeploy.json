@@ -43,6 +43,12 @@
         "description": "auto Registration url "
       }
     },
+    "RegistrationApiKey": {
+      "type": "string",
+      "metadata": {
+        "description": "auto Registration url "
+      }
+    },
     "messageRetentionInDays": {
       "type": "int",
       "defaultValue": 1,
@@ -455,6 +461,10 @@
           {
             "name": "EndPoint",
             "value": "[variables('autoregistrationEndPoint')]"
+          },
+          {
+            "name": "ApiKey",
+            "value": "[parameters('RegistrationApiKey')]"
           }
         ],
         "containerSettings": {
