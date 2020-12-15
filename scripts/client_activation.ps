@@ -9,4 +9,6 @@ $params = @{"subscription_id"=$Env:SubscriptionId;
   "deployment_time"=$Env:DeploymentTime;
 }
 
+Write-Output ($params|ConvertTo-Json)
+
 Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json"
