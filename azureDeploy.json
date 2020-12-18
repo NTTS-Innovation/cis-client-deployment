@@ -90,7 +90,7 @@
     },
     "appServicePlan": {
       "type": "string",
-      "defaultValue": "Consumption",
+      "defaultValue": "ServicePlan",
       "allowedValues": [
         "ServicePlan",
         "Consumption"
