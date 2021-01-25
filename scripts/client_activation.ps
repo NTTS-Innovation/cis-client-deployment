@@ -23,3 +23,6 @@ if ($Response.statuscode -gt 202)
 {
   throw 'Registration failed, status code: $Response.statuscode, url: $Env:EndPoint with key: $Env:ApiKey'
 }
+else {
+  Write-Output 'Registration succeeded, status code: $Response.statuscode, url: $Env:EndPoint with key: $Env:ApiKey'
+}
