@@ -19,3 +19,7 @@ $Response = Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|Con
 Write-Output $Response.statuscode
 
 
+if ($Response.statuscode -gt 200)
+{
+  throw 'Timed out waiting for creation of certificate $certificateName in vault $vaultName'
+}
