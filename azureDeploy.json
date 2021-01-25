@@ -463,10 +463,6 @@
             "value": "[variables('functionAppName')]"
           },
           {
-            "name": "FunctionAppKey",
-            "value": "bad"
-          },
-          {
             "name": "EndPoint",
             "value": "[variables('autoregistrationEndPoint')]"
           },
