@@ -181,7 +181,7 @@
     "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
     "roleDefinitionName": "[guid(resourceGroup().id, parameters('location'), parameters('utcNow'))]",
     "contributorRoleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-    "deploymentScriptGitUrl": "[concat('https://raw.githubusercontent.com/NTTS-Innovation/cis-client-deployment/', parameters('DeploymentScriptGitBranch'),'/scripts/client_activation.ps']"
+    "deploymentScriptGitUrl": "[concat('https://raw.githubusercontent.com/NTTS-Innovation/cis-client-deployment/', parameters('DeploymentScriptGitBranch'),'/scripts/client_activation.ps')]"
   },
   "resources": [
     {
