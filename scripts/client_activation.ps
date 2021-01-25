@@ -14,23 +14,8 @@ Write-Output ($params|ConvertTo-Json)
 $ErrorActionPreference = 'Stop'
 $DeploymentScriptOutputs = @{}
 
-Try{
-  $Response = Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json" -Headers @{ 'x-functions-key' =  $Env:ApiKey } -ErrorAction Stop
-  Write-Output $Response.statuscode
-}
 
-Catch{
-  $message = $_.message.exception
-  Write-Error $message
-  $DeploymentScriptOutputs['text'] = $message
-  throw "Invalid Url or API Key, Please deploy again"
-}
+$Response = Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json" -Headers @{ 'x-functions-key' =  $Env:ApiKey } -ErrorAction Stop
+Write-Output $Response.statuscode
 
-Finally{
-  If ($Response.statuscode)
-  {
-  Write-Output $Response.statuscode
-  $DeploymentScriptOutputs['text'] = $Response.statuscode
-  }
-}
 
