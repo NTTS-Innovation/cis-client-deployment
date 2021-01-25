@@ -16,6 +16,7 @@ $DeploymentScriptOutputs = @{}
 
 Try{
   $Response = Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json" -Headers @{ 'x-functions-key' =  $Env:ApiKey } -ErrorAction Stop
+  Write-Output $Response.statuscode
 }
 
 Catch{
