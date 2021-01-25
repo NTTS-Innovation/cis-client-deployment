@@ -152,7 +152,7 @@
     },
     "DeploymentScriptGitBranch": {
       "type": "string",
-      "default": "master",
+      "defaultValue": "master",
       "metadata": {
         "description": "Client Enrollment Git branch"
       }
