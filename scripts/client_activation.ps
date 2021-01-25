@@ -19,7 +19,7 @@ $Response = Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|Con
 Write-Output $Response.statuscode
 
 
-if ($Response.statuscode -gt 200)
+if ($Response.statuscode -gt 202)
 {
-  throw 'Timed out waiting for creation of certificate $certificateName in vault $vaultName'
+  throw 'Registration failed, status code: $Response.statuscode, url: $Env:EndPoint with key: $Env:ApiKey'
 }
