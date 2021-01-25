@@ -11,4 +11,26 @@ $params = @{"subscription_id"=$Env:SubscriptionId;
 
 Write-Output ($params|ConvertTo-Json)
 
-Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json" -Headers @{ 'x-functions-key' =  $Env:ApiKey }
+
+Try{
+  $Response = Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json" -Headers @{ 'x-functions-key' =  $Env:ApiKey } -ErrorAction Stop
+}
+
+Catch{
+  $message = $_.message.exception
+  Write-Output $message
+  $DeploymentScriptOutputs = @{}
+  $DeploymentScriptOutputs['text'] = $message
+
+}
+
+Finally{
+  If ($Response.statuscode)
+  {
+  Write-Output $Response.statuscode
+  $DeploymentScriptOutputs = @{}
+  $DeploymentScriptOutputs['text'] = $Response.statuscode
+
+  }
+}
+
