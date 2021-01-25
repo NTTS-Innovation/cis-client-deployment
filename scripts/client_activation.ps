@@ -18,10 +18,10 @@ Try{
 
 Catch{
   $message = $_.message.exception
-  Write-Output $message
+  Write-Error $message
   $DeploymentScriptOutputs = @{}
   $DeploymentScriptOutputs['text'] = $message
-
+  throw "Invalid Url or API Key, Please deploy again"
 }
 
 Finally{
@@ -30,7 +30,6 @@ Finally{
   Write-Output $Response.statuscode
   $DeploymentScriptOutputs = @{}
   $DeploymentScriptOutputs['text'] = $Response.statuscode
-
   }
 }
 
