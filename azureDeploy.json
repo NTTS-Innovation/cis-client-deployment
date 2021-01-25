@@ -150,6 +150,13 @@
         "description": "Event hub only: Event hub name."
       }
     },
+    "DeploymentScriptGitBranch": {
+      "type": "string",
+      "default": "master",
+      "metadata": {
+        "description": "Client Enrollment Git branch"
+      }
+    },
     "utcNow": {
       "type": "string",
       "defaultValue": "[utcNow()]",
@@ -173,7 +180,8 @@
     "NTTAzurePostUserIdentity": "[concat(resourceGroup().name,'-',parameters('location'),'-','NTTAzurePostUserIdentity')]",
     "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
     "roleDefinitionName": "[guid(resourceGroup().id, parameters('location'), parameters('utcNow'))]",
-    "contributorRoleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+    "contributorRoleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+    "deploymentScriptGitUrl": "[concat('https://raw.githubusercontent.com/NTTS-Innovation/cis-client-deployment/', parameters('DeploymentScriptGitBranch'),'/scripts/client_activation.ps']"
   },
   "resources": [
     {
@@ -477,7 +485,7 @@
         "scriptContent": "pwsh ./client_activation.ps",
 
         "supportingScriptUris": [
-          "https://raw.githubusercontent.com/NTTS-Innovation/cis-client-deployment/master/scripts/client_activation.ps"
+          "[variables('deploymentScriptGitUrl')]"
         ],
         "timeout": "PT30M",
         "cleanupPreference": "OnSuccess",
