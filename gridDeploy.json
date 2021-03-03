@@ -1,0 +1,210 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appNamePrefix": {
+            "type": "string",
+            "defaultValue": "nttsctd",
+            "metadata": {
+                "description": "The name prefix to use for stack resources."
+            }
+        },
+        "location": {
+            "type": "string",
+            "allowedValues": [
+                "eastasia",
+                "southeastasia",
+                "australiaeast",
+                "brazilsouth",
+                "canadacentral",
+                "eastus2",
+                "eastus",
+                "centralus",
+                "northcentralus",
+                "uksouth",
+                "centralindia",
+                "southindia",
+                "japaneast",
+                "koreacentral",
+                "northeurope",
+                "westcentralus",
+                "westeurope",
+                "westus2",
+                "westus",
+                "southcentralus"
+            ],
+            "metadata": {
+                "description": "Provide a location for the Blob Storage account that supports Event Grid."
+            }
+        },
+        "eventSubName": {
+            "type": "string",
+            "defaultValue": "subToStorage",
+            "metadata": {
+                "description": "Provide a name for the Event Grid subscription."
+            }
+        },
+        "endpoint": {
+            "type": "string",
+            "metadata": {
+                "description": "Provide the URL for the WebHook to receive events."
+            }
+        },
+        "utcNow": {
+            "type": "string",
+            "defaultValue": "[utcNow()]",
+            "metadata": {
+                "description": "UTC Timestamp used to Generate GUID"
+            }
+        }
+    },
+    "variables": {
+        "storageAccountName": "[take(concat(parameters('appNamePrefix'), parameters('location'), uniquestring(resourceGroup().id)), 24)]",
+        "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "systemTopicName": "[concat(parameters('appNamePrefix'),'-',parameters('location'),'-','flowlogs')]",
+        "NTTAzurePostUserIdentity": "[concat(resourceGroup().name,'-',parameters('location'),'-','NTTAzurePostUserIdentity')]",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+        "roleDefinitionName": "[guid(resourceGroup().id, parameters('location'), parameters('utcNow'))]",
+        "contributorRoleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "deploymentScriptName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-','autoregistration')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "kind": "StorageV2",
+            "apiVersion": "2019-04-01",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "properties": {
+                "accountType": "Standard_LRS"
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[variables('systemTopicName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[variables('storageAccountName')]"
+            ],
+            "properties": {
+                "source": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "topicType": "Microsoft.Storage.StorageAccounts"
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[concat(variables('systemTopicName'), '/', parameters('eventSubName'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.EventGrid/systemTopics', variables('systemTopicName'))]"
+            ],
+            "properties": {
+                "destination": {
+                    "properties": {
+                        "endpointUrl": "[parameters('endpoint')]"
+                    },
+                    "endpointType": "WebHook"
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Storage.BlobCreated",
+                        "Microsoft.Storage.BlobDeleted"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "name": "[variables('NTTAzurePostUserIdentity')]",
+            "apiVersion": "2018-11-30",
+            "location": "[parameters('location')]"
+        },
+        {
+            "apiVersion": "2020-04-01-preview",
+            "type": "Microsoft.Authorization/roleAssignments",
+            "name": "[variables('roleDefinitionName')]",
+            "dependsOn": [
+                "[variables('NTTAzurePostUserIdentity')]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+                "principalId": "[reference(variables('NTTAzurePostUserIdentity')).principalId]",
+                "scope": "[resourceGroup().id]",
+                "principalType": "ServicePrincipal"
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2020-10-01",
+            "name": "[variables('deploymentScriptName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[variables('NTTAzurePostUserIdentity')]",
+                "[variables('roleDefinitionName')]"
+            ],
+            "kind": "AzurePowerShell",
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('NTTAzurePostUserIdentity'))]": {}
+                }
+            },
+            "properties": {
+                "forceUpdateTag": 1,
+                "azPowerShellVersion": "3.0",
+                "environmentVariables": [
+                    {
+                        "name": "SubscriptionId",
+                        "value": "[subscription().subscriptionId]"
+                    },
+                    {
+                        "name": "ResourceGroup",
+                        "value": "[resourceGroup().name]"
+                    },
+                    {
+                        "name": "Region",
+                        "value": "[parameters('location')]"
+                    },
+                    {
+                        "name": "DeploymentName",
+                        "value": "[deployment().name]"
+                    },
+                    {
+                        "name": "DeploymentTime",
+                        "value": "[parameters('utcNow')]"
+                    },
+                    {
+                        "name": "EndPoint",
+                        "value": "[variables('autoregistrationEndPoint')]"
+                    },
+                    {
+                        "name": "ApiKey",
+                        "value": "[parameters('RegistrationApiKey')]"
+                    },
+                    {
+                        "name": "StorageAccountKey",
+                        "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId(resourceGroup().name,'Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-04-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
+                    }
+                ],
+                "containerSettings": {
+                    "containerGroupName": "nttfunctioncontainer"
+                },
+                "storageAccountSettings": {
+                    "storageAccountName": "[variables('storageAccountName')]",
+                    "storageAccountKey": "[listKeys(variables('storageAccountId'), '2019-04-01').keys[0].value]"
+                },
+                "scriptContent": "pwsh ./client_activation.ps",
+                "supportingScriptUris": [
+                    "[variables('deploymentScriptGitUrl')]"
+                ],
+                "timeout": "PT30M",
+                "cleanupPreference": "OnSuccess",
+                "retentionInterval": "P1D"
+            }
+        }
+    ]
+}
