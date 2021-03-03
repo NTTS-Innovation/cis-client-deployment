@@ -1,12 +1,13 @@
 $params = @{"subscription_id"=$Env:SubscriptionId;
   "resource_group"=$Env:ResourceGroup;
-  "eventhub_namespace"=$Env:eventhubNameSpace;
-  "eventhub_name"=$Env:EventHubName;
-  "eventhub_policy_name"=$Env:EventHubPolicyName;
-  "consumer_group_name"=$Env:EventHubConsumerGroup;
   "region"=$Env:Region;
-  "primary_key"=$Env:EventHubPrimaryKey;
   "deployment_time"=$Env:DeploymentTime;
+  "storage_account_key"=$Env:StorageAccountKey;
+ # "eventhub_namespace"=$Env:eventhubNameSpace;
+ # "eventhub_name"=$Env:EventHubName;
+ # "eventhub_policy_name"=$Env:EventHubPolicyName;
+ # "consumer_group_name"=$Env:EventHubConsumerGroup;
+ # "primary_key"=$Env:EventHubPrimaryKey;
 }
 
 Write-Output ($params|ConvertTo-Json)
