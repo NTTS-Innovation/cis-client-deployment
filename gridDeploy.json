@@ -37,6 +37,18 @@
                 "description": "Provide a location for the Blob Storage account that supports Event Grid."
             }
         },
+        "processingRegion": {
+            "type": "string",
+            "defaultValue": "Default",
+            "allowedValues": [
+                "Default",
+                "NorthEurope",
+                "Singapore"
+            ],
+            "metadata": {
+                "description": "Select the destination region for processing."
+            }
+        },
         "eventSubName": {
             "type": "string",
             "defaultValue": "subToStorage",
@@ -59,6 +71,7 @@
         }
     },
     "variables": {
+        "endpoint": "[concat(parameters('endpoint'),'?','processingregion=',parameters('processingRegion')]",
         "storageAccountName": "[take(concat(parameters('appNamePrefix'), parameters('location'), uniquestring(resourceGroup().id)), 24)]",
         "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "systemTopicName": "[concat(parameters('appNamePrefix'),'-',parameters('location'),'-','flowlogs')]",
@@ -105,7 +118,7 @@
             "properties": {
                 "destination": {
                     "properties": {
-                        "endpointUrl": "[parameters('endpoint')]"
+                        "endpointUrl": "[variables('endpoint')]"
                     },
                     "endpointType": "WebHook"
                 },
@@ -179,7 +192,7 @@
                     },
                     {
                         "name": "EndPoint",
-                        "value": "[variables('autoregistrationEndPoint')]"
+                        "value": "[variables('endpoint')]"
                     },
                     {
                         "name": "ApiKey",
