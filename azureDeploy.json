@@ -1,7 +1,55 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "parameters": {},
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "centralus",
+      "allowedValues": [
+        "eastasia",
+        "southeastasia",
+        "australiaeast",
+        "brazilsouth",
+        "canadacentral",
+        "eastus2",
+        "eastus",
+        "centralus",
+        "northcentralus",
+        "uksouth",
+        "centralindia",
+        "southindia",
+        "japaneast",
+        "koreacentral",
+        "northeurope",
+        "westcentralus",
+        "westeurope",
+        "westus2",
+        "westus",
+        "southcentralus"
+      ],
+      "metadata": {
+        "description": "Provide a location for the Blob Storage account that supports Event Grid."
+      }
+    },
+    "processingRegion": {
+      "type": "string",
+      "defaultValue": "Default",
+      "allowedValues": [
+        "Default",
+        "NorthEurope",
+        "Singapore"
+      ],
+      "metadata": {
+        "description": "Select the destination region for processing."
+      }
+    },
+    "apiKey": {
+      "type": "string",
+      "metadata": {
+        "description": "API Key for the Registration"
+      }
+    }
+  },
   "variables": {},
   "resources": [
     {
@@ -10,13 +58,22 @@
       "name": "linkedTemplate",
       "properties": {
         "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "processingRegion": {
+            "value": "[parameters('processingRegion')]"
+          },
+          "apiKey": {
+            "value": "[parameters('apiKey')]"
+          }
+        },
         "templateLink": {
-          "uri":"https://github.com/NTTS-Innovation/cis-client-deployment/blob/f/eventgrid/gridDeploy.json",
-          "contentVersion":"1.0.0.0"
+          "uri": "https://github.com/NTTS-Innovation/cis-client-deployment/blob/f/eventgrid/gridDeploy.json",
+          "contentVersion": "1.0.0.0"
         }
       }
     }
-  ],
-  "outputs": {
-  }
+  ]
 }
