@@ -4,7 +4,6 @@
   "parameters": {
     "location": {
       "type": "string",
-      "defaultValue": "centralus",
       "allowedValues": [
         "eastasia",
         "southeastasia",
@@ -35,9 +34,8 @@
       "type": "string",
       "defaultValue": "Default",
       "allowedValues": [
-        "Default",
-        "NorthEurope",
-        "Singapore"
+        "default",
+        "northeurope",
       ],
       "metadata": {
         "description": "Select the destination region for processing."
