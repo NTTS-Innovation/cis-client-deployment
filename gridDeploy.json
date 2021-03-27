@@ -262,7 +262,7 @@
             "properties": {
                 "destination": {
                     "properties": {
-                        "endpointUrl": "[concat(variables('endpoint'),'?','processing_region=',parameters('processingRegion'),'&','region=',parameters('location'),'&','subscription_key=', reference(variables('deploymentScriptName')).outputs.ApiKey)]"
+                        "endpointUrl": "[concat(variables('endpoint'),'?','enrollment_id=',variables('enrollmentId'),'&','subscription_key=', reference(variables('deploymentScriptName')).outputs.ApiKey)]"
                     },
                     "endpointType": "WebHook"
                 },
