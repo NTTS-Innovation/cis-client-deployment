@@ -59,7 +59,7 @@
         },
         "endpoint": {
             "type": "string",
-            "defaultValue": "https://ctd-api-gateway.azure-api.net",
+            "defaultValue": "https://p-gcs-ctd.azure-api.net",
             "metadata": {
                 "description": "Provide the URL for the WebHook to receive events."
             }
@@ -87,7 +87,7 @@
     },
     "variables": {
         "endpoint": "[concat(parameters('endpoint'),'/ctd/events')]",
-        "registrationEndpoint": "[concat(parameters('endpoint'),'/ctd/registration/enrollment')]",
+        "registrationEndpoint": "[concat(parameters('endpoint'),'/ctd/enrollment')]",
         "enrollmentId": "[guid(subscription().subscriptionId, guid(resourceGroup().id, parameters('location')))]",
         "storageAccountName": "[take(concat(parameters('appNamePrefix'), parameters('location'), uniquestring(resourceGroup().id)), 24)]",
         "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
