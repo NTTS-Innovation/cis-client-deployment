@@ -35,7 +35,7 @@
       "defaultValue": "Default",
       "allowedValues": [
         "default",
-        "northeurope",
+        "northeurope"
       ],
       "metadata": {
         "description": "Select the destination region for processing."
