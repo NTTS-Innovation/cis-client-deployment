@@ -32,7 +32,7 @@
     },
     "processingRegion": {
       "type": "string",
-      "defaultValue": "Default",
+      "defaultValue": "default",
       "allowedValues": [
         "default",
         "northeurope"
