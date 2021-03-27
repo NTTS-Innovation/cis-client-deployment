@@ -40,11 +40,10 @@
         },
         "processingRegion": {
             "type": "string",
-            "defaultValue": "Default",
+            "defaultValue": "default",
             "allowedValues": [
-                "Default",
-                "NorthEurope",
-                "Singapore"
+                "default",
+                "northeurope"
             ],
             "metadata": {
                 "description": "Select the destination region for processing."
