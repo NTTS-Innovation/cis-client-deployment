@@ -68,7 +68,7 @@
           }
         },
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/NTTS-Innovation/cis-client-deployment/f/eventgrid/gridDeploy.json",
+          "uri": "https://raw.githubusercontent.com/NTTS-Innovation/cis-client-deployment/gridDeploy.json",
           "contentVersion": "1.0.0.0"
         }
       }
