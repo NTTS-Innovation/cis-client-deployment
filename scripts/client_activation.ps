@@ -1,28 +1,30 @@
-$params = @{"subscription_id"=$Env:SubscriptionId;
-  "resource_group"=$Env:ResourceGroup;
-  "eventhub_namespace"=$Env:eventhubNameSpace;
-  "eventhub_name"=$Env:EventHubName;
-  "eventhub_policy_name"=$Env:EventHubPolicyName;
-  "consumer_group_name"=$Env:EventHubConsumerGroup;
-  "region"=$Env:Region;
-  "primary_key"=$Env:EventHubPrimaryKey;
-  "deployment_time"=$Env:DeploymentTime;
-}
 
-Write-Output ($params|ConvertTo-Json)
+$headers = @{"Ocp-Apim-Subscription-Key"=$Env:ApiKey;
+  "processing_region"=$Env:ProcessingRegion;
+  "enrollment_id"=$Env:EnrollmentId;
+  "region"=$Env:Region;
+  }
+
+$body = @{"subscription_id"=$Env:SubscriptionId;
+  "resource_group"=$Env:ResourceGroup;
+  "region"=$Env:Region;
+  "storage_account_key"=$Env:StorageAccountKey;
+  "processing_region"=$Env:ProcessingRegion;
+  "deployment_name"=$Env:DeploymentName;
+  "deployment_time"=$Env:DeploymentTime;
+  "enrollment_id"=$Env:EnrollmentId;
+}
 
 $ErrorActionPreference = 'Stop'
 $DeploymentScriptOutputs = @{}
 
 
-$Response = Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($params|ConvertTo-Json) -ContentType "application/json" -Headers @{ 'x-functions-key' =  $Env:ApiKey } -ErrorAction Stop
-Write-Output $Response.statuscode
-
+$Response = Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($body|ConvertTo-Json) -ContentType "application/json" -Headers $headers -ErrorAction Stop
 
 if ($Response.statuscode -gt 202)
 {
   throw 'Registration failed, status code: $Response.statuscode, url: $Env:EndPoint with key: $Env:ApiKey'
 }
-else {
-  Write-Output 'Registration succeeded, status code: $Response.statuscode, url: $Env:EndPoint with key: $Env:ApiKey'
-}
+
+$ClientAPI = ($Response.content|ConvertFrom-Json)
+Write-Output $ClientAPI.event_grid_api_key
