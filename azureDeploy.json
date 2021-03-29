@@ -2,34 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "location": {
-      "type": "string",
-      "allowedValues": [
-        "eastasia",
-        "southeastasia",
-        "australiaeast",
-        "brazilsouth",
-        "canadacentral",
-        "eastus2",
-        "eastus",
-        "centralus",
-        "northcentralus",
-        "uksouth",
-        "centralindia",
-        "southindia",
-        "japaneast",
-        "koreacentral",
-        "northeurope",
-        "westcentralus",
-        "westeurope",
-        "westus2",
-        "westus",
-        "southcentralus"
-      ],
-      "metadata": {
-        "description": "Provide a location for the Blob Storage account that supports Event Grid."
-      }
-    },
     "processingRegion": {
       "type": "string",
       "defaultValue": "default",
@@ -58,7 +30,7 @@
         "mode": "Incremental",
         "parameters": {
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[resourceGroup().location]"
           },
           "processingRegion": {
             "value": "[parameters('processingRegion')]"
