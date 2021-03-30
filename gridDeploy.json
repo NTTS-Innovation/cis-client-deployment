@@ -12,28 +12,6 @@
         "location": {
             "type": "string",
             "defaultValue": "centralus",
-            "allowedValues": [
-                "eastasia",
-                "southeastasia",
-                "australiaeast",
-                "brazilsouth",
-                "canadacentral",
-                "eastus2",
-                "eastus",
-                "centralus",
-                "northcentralus",
-                "uksouth",
-                "centralindia",
-                "southindia",
-                "japaneast",
-                "koreacentral",
-                "northeurope",
-                "westcentralus",
-                "westeurope",
-                "westus2",
-                "westus",
-                "southcentralus"
-            ],
             "metadata": {
                 "description": "Provide a location for the Blob Storage account that supports Event Grid."
             }
