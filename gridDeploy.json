@@ -21,7 +21,8 @@
             "defaultValue": "default",
             "allowedValues": [
                 "default",
-                "northeurope"
+                "northeurope",
+                "eastus2"
             ],
             "metadata": {
                 "description": "Select the destination region for processing."
