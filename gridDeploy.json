@@ -105,156 +105,6 @@
                 "source": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
                 "topicType": "Microsoft.Storage.StorageAccounts"
             }
-        },
-        {
-            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-            "name": "[variables('NTTAzurePostUserIdentity')]",
-            "apiVersion": "2018-11-30",
-            "location": "[parameters('location')]"
-        },
-        {
-            "apiVersion": "2020-04-01-preview",
-            "type": "Microsoft.Authorization/roleAssignments",
-            "name": "[variables('roleDefinitionName')]",
-            "dependsOn": [
-                "[variables('NTTAzurePostUserIdentity')]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-                "principalId": "[reference(variables('NTTAzurePostUserIdentity')).principalId]",
-                "scope": "[resourceGroup().id]",
-                "principalType": "ServicePrincipal"
-            }
-        },
-        {
-            "type": "Microsoft.Resources/deploymentScripts",
-            "condition": "[not(contains(variables('manualregiondeployments'), parameters('location')))]",
-            "apiVersion": "2020-10-01",
-            "name": "[variables('deploymentScriptName')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[variables('NTTAzurePostUserIdentity')]",
-                "[variables('roleDefinitionName')]"
-            ],
-            "kind": "AzurePowerShell",
-            "identity": {
-                "type": "UserAssigned",
-                "userAssignedIdentities": {
-                    "[resourceID('Microsoft.ManagedIdentity/userAssignedIdentities/',variables('NTTAzurePostUserIdentity'))]": {}
-                }
-            },
-            "properties": {
-                "forceUpdateTag": 1,
-                "azPowerShellVersion": "3.0",
-                "environmentVariables": [
-                    {
-                        "name": "SubscriptionId",
-                        "value": "[subscription().subscriptionId]"
-                    },
-                    {
-                        "name": "ResourceGroup",
-                        "value": "[resourceGroup().name]"
-                    },
-                    {
-                        "name": "Region",
-                        "value": "[parameters('location')]"
-                    },
-                    {
-                        "name": "ProcessingRegion",
-                        "value": "[parameters('processingRegion')]"
-                    },
-                    {
-                        "name": "DeploymentName",
-                        "value": "[deployment().name]"
-                    },
-                    {
-                        "name": "DeploymentTime",
-                        "value": "[parameters('utcNow')]"
-                    },
-                    {
-                        "name": "EndPoint",
-                        "value": "[variables('registrationEndpoint')]"
-                    },
-                    {
-                        "name": "ApiKey",
-                        "value": "[parameters('ApiKey')]"
-                    },
-                    {
-                        "name": "EnrollmentId",
-                        "value": "[variables('enrollmentId')]"
-                    },
-                    {
-                        "name": "StorageAccountKey",
-                        "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId(resourceGroup().name,'Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-04-01').keys[0].value,';EndpointSuffix=core.windows.net')]"
-                    }
-                ],
-                "containerSettings": {
-                    "containerGroupName": "nttfunctioncontainer"
-                },
-                "storageAccountSettings": {
-                    "storageAccountName": "[variables('storageAccountName')]",
-                    "storageAccountKey": "[listKeys(variables('storageAccountId'), '2019-04-01').keys[0].value]"
-                },
-                "scriptContent": "
-                    $headers = @{'Ocp-Apim-Subscription-Key'=$Env:ApiKey;
-                    'processing_region'=$Env:ProcessingRegion;
-                    'enrollment_id'=$Env:EnrollmentId;
-                    'region'=$Env:Region;
-                    }
-
-                    $body = @{'subscription_id'=$Env:SubscriptionId;
-                    'resource_group'=$Env:ResourceGroup;
-                    'region'=$Env:Region;
-                    'storage_account_key'=$Env:StorageAccountKey;
-                    'processing_region'=$Env:ProcessingRegion;
-                    'deployment_name'=$Env:DeploymentName;
-                    'deployment_time'=$Env:DeploymentTime;
-                    'enrollment_id'=$Env:EnrollmentId;
-                    }
-
-                    $ErrorActionPreference = 'Stop'
-                    $DeploymentScriptOutputs = @{}
-
-
-                    $Response = Invoke-WebRequest -Uri $Env:EndPoint -Method POST -Body ($body|ConvertTo-Json) -ContentType 'application/json' -Headers $headers -ErrorAction Stop
-
-                    if ($Response.statuscode -gt 202)
-                    {
-                    throw 'Registration failed, status code: $Response.statuscode, url: $Env:EndPoint with key: $Env:ApiKey'
-                    }
-
-                    $ClientAPI = ($Response.content|ConvertFrom-Json)
-                    Write-Output $ClientAPI.event_grid_api_key
-                    $DeploymentScriptOutputs = @{}
-                    $DeploymentScriptOutputs['ApiKey'] = $ClientAPI.event_grid_api_key
-                ",
-                "timeout": "PT30M",
-                "cleanupPreference": "OnSuccess",
-                "retentionInterval": "P1D"
-            }
-        },
-        {
-            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
-            "condition": "[not(contains(variables('manualregiondeployments'), parameters('location')))]",
-            "apiVersion": "2020-04-01-preview",
-            "name": "[concat(variables('systemTopicName'), '/', parameters('eventSubName'))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.EventGrid/systemTopics', variables('systemTopicName'))]",
-                "[variables('deploymentScriptName')]"
-            ],
-            "properties": {
-                "destination": {
-                    "properties": {
-                        "endpointUrl": "[concat(variables('endpoint'),'?','enrollment_id=',variables('enrollmentId'),'&','subscription_key=', reference(variables('deploymentScriptName')).outputs.ApiKey)]"
-                    },
-                    "endpointType": "WebHook"
-                },
-                "filter": {
-                    "includedEventTypes": [
-                        "Microsoft.Storage.BlobCreated"
-                    ]
-                }
-            }
         }
     ],
     "outputs": {
@@ -305,6 +155,10 @@
             variables('singleQuote'),
             ' ',
             variables('registrationEndpoint'))]"
+        },
+        "eventGridEndPoint": {
+            "type": "string",
+            "value": "[concat(variables('endpoint'),'?','enrollment_id=',variables('enrollmentId'),'&','subscription_key=<apiKey>')]"
         }
 
     }
