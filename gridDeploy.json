@@ -65,6 +65,7 @@
     },
     "variables": {
         "endpoint": "[concat(parameters('endpoint'),'/ctd/events')]",
+        "manualregiondeployments": ["australiasoutheast"],
         "registrationEndpoint": "[concat(parameters('endpoint'),'/ctd/enrollment')]",
         "enrollmentId": "[guid(subscription().subscriptionId, guid(resourceGroup().id, parameters('location')))]",
         "storageAccountName": "[concat(parameters('appNamePrefix'), take(guid(resourceGroup().id, parameters('location'), parameters('utcNow')),8))]",
@@ -75,7 +76,8 @@
         "roleDefinitionName": "[guid(resourceGroup().id, parameters('location'), parameters('utcNow'))]",
         "contributorRoleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
         "deploymentScriptName": "[concat(parameters('appNamePrefix'), '-', parameters('location'), '-','autoregistration')]",
-        "deploymentScriptGitUrl": "[concat('https://raw.githubusercontent.com/NTTS-Innovation/cis-client-deployment/', parameters('DeploymentScriptGitBranch'),'/scripts/client_activation.ps')]"
+        "deploymentScriptGitUrl": "[concat('https://raw.githubusercontent.com/NTTS-Innovation/cis-client-deployment/', parameters('DeploymentScriptGitBranch'),'/scripts/client_activation.ps')]",
+        "singleQuote": "'"
     },
     "resources": [
         {
@@ -126,6 +128,7 @@
         },
         {
             "type": "Microsoft.Resources/deploymentScripts",
+            "condition": "[not(contains(variables('manualregiondeployments'), parameters('location')))]",
             "apiVersion": "2020-10-01",
             "name": "[variables('deploymentScriptName')]",
             "location": "[parameters('location')]",
@@ -232,6 +235,7 @@
         },
         {
             "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "condition": "[not(contains(variables('manualregiondeployments'), parameters('location')))]",
             "apiVersion": "2020-04-01-preview",
             "name": "[concat(variables('systemTopicName'), '/', parameters('eventSubName'))]",
             "dependsOn": [
@@ -252,5 +256,56 @@
                 }
             }
         }
-    ]
+    ],
+    "outputs": {
+        "RegistrationString": {
+            "type": "string",
+            "value": "[concat('curl ',
+             '-H \"Content-Type: application/json\"', 
+             ' -H \"Ocp-Apim-Subscription-Key\"=',
+             parameters('ApiKey'),
+             ' -H \"processing_region\"=',
+             parameters('processingRegion'),
+             ' -H \"enrollment_id\"=',
+             variables('enrollmentId'),
+             ' -H \"region\"=',
+             parameters('location'),
+             ' --request POST',
+             ' --data',
+            variables('singleQuote'),
+            '{',
+            '\"subscription_id\"=',
+            subscription().subscriptionId,
+            ',',
+            '\"resource_group\"=',
+            resourceGroup().name,
+            ',',
+            '\"region\"=',
+            parameters('location'),
+            ',',
+            '\"storage_account_key\"=',
+            'DefaultEndpointsProtocol=https;AccountName=', 
+            variables('storageAccountName'), 
+            ';AccountKey=', 
+            listKeys(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-04-01').keys[0].value,
+            ';EndpointSuffix=core.windows.net',
+            ',',
+            '\"processing_region\"=',
+            parameters('processingRegion'),
+            ',',
+            '\"deployment_name\"=',
+            deployment().name,
+            ',',
+            '\"deployment_time\"=',
+            parameters('utcNow'),
+            ',',
+            '\"enrollment_id\"=',
+            variables('enrollmentId'),
+            '}',
+            variables('singleQuote'),
+            ' ',
+            variables('registrationEndpoint'))]"
+        }
+
+    }
 }
