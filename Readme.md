@@ -22,14 +22,15 @@ The Linked Template will have the output commands needed to manually register th
 
 ![output](images/template_output.png)
 
-The 'registrationString' curl command will register the client to the backend and return a api key to use in the EventGrid WebHook
+1. The first output of the Linked Template, 'registrationString' needs to be run manually from a command line on a machine with the curl command installed. Use copy to clipboard button and paste into the console. The curl command will register the client.
 
+The output from the 'registrationString' returns a api key to use in the EventGrid WebHook
+```
   {
     "event_grid_api_key": "XXXXXXXXXXXX"
   }
-
-
-In the Storage Account, Click Events and the "+ Event Subscription"
+```
+2. In the Storage Account, Click Events and the "+ Event Subscription"
 
 ![Blob](images/BlobStorage.png)
 
@@ -38,7 +39,7 @@ Name: Static Unique Name
 Filter to Event Types: Blob Create
 EndPoint Type: Web Hook
 
-Click on "Select and endpoint" and enter eventGridEndPoint string from the template output, with the API key 
+Click on "Select an endpoint" and enter eventGridEndPoint string from the template output, with the API key 
 that you received from the manual registration command. 
 
 and click "Confirm Selection", then Create
