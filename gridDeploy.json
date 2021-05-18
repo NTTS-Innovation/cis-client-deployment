@@ -38,7 +38,7 @@
         },
         "endpoint": {
             "type": "string",
-            "defaultValue": "https://p-gcs-ctd.azure-api.net",
+            "defaultValue": "https://s-gcs-ctd.azure-api.net",
             "metadata": {
                 "description": "Provide the URL for the WebHook to receive events."
             }
